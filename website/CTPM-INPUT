@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clinical Trial System</title>
+  <style>
+    body { font-family: Arial; background:#111; color:white; padding:20px; }
+    .page { display:none; }
+    .active { display:block; }
+    button { padding:10px; margin:10px 0; width:100%; }
+    .box { border:1px solid #444; padding:10px; margin:10px 0; }
+    .disease-box { height:200px; overflow:auto; border:1px solid #555; padding:10px; }
+  </style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<div id="page1" class="page active">
+  <h2>Clinical Trial Patient Matching</h2>
+  <button onclick="goToPage(3)">👤 Patient Login</button>
+  <button onclick="goToPage(2)">🧪 Researcher Portal</button>
+</div>
+
+<!-- PAGE 2 -->
+<div id="page2" class="page">
+  <h2>Uploaded Patient Data</h2>
+  <div id="dataBox" class="box">No data yet</div>
+  <button onclick="goToPage(1)">⬅ Back</button>
+</div>
+
+<!-- PAGE 3 -->
+<div id="page3" class="page">
+  <h2>Patient Form</h2>
+
+  Name: <input id="name"><br><br>
+
+  Age:
+  <select id="age">
+    <option value="">Select</option>
+    <option value="major">Major</option>
+    <option value="minor">Minor</option>
+  </select><br><br>
+
+  Gender:
+  <select id="gender" onchange="checkGender()">
+    <option value="">Select</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select><br><br>
+
+  <div id="pregnancyBox" style="display:none;">
+    Pregnant:
+    <select id="pregnant">
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select><br><br>
+  </div>
+
+  Upload Proof:
+  <input type="file" id="file"><br><br>
+
+  <h3>Select Diseases</h3>
+  <div class="disease-box" id="diseaseList"></div>
+
+  <button onclick="submitForm()">Submit</button>
+</div>
+
+<!-- RESULT PAGE -->
+<div id="page4" class="page">
+  <h2 id="result"></h2>
+  <button onclick="goToPage(1)">Go Home</button>
+</div>
+
+<script>
+
+// PAGE SWITCH
+function goToPage(p){
+  document.querySelectorAll(".page").forEach(pg=>pg.classList.remove("active"));
+  document.getElementById("page"+p).classList.add("active");
+}
+
+// GENDER LOGIC
+function checkGender(){
+  let g=document.getElementById("gender").value;
+  document.getElementById("pregnancyBox").style.display=(g==="female")?"block":"none";
+}
+
+// ALL DISEASES
+let diseases = [
+"Asthma","Arthritis","Alzheimer’s disease","Anemia","Breast cancer","Brain tumor",
+"Bronchitis","Cancer","COVID-19","Chronic kidney disease","COPD","Diabetes","Dengue",
+"Depression","Epilepsy","Endometriosis","Flu","Fibromyalgia","Gastritis","Glaucoma",
+"Heart disease","Hypertension","Hepatitis","IBS","Jaundice","Kidney disease",
+"Lung cancer","Leukemia","Liver disease","Malaria","Migraine","Multiple sclerosis",
+"Neuropathy","Obesity","Osteoporosis","Parkinson’s disease","Pneumonia","Psoriasis",
+"Rheumatoid arthritis","Stroke","Skin cancer","Schizophrenia","Tuberculosis",
+"Thyroid disorder","UTI","Viral infection","Whooping cough","Yellow fever","Zika virus"
+];
+
+// GENERATE DISEASE LIST
+let container = document.getElementById("diseaseList");
+diseases.forEach(d=>{
+  container.innerHTML += `
+    <div>
+      <input type="checkbox" onchange="toggleStage(this)"> ${d}
+      <select disabled>
+        <option value="">Stage</option>
+        <option value="early">Early</option>
+        <option value="medium">Medium</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>`;
+});
+
+// ENABLE STAGE
+function toggleStage(cb){
+  let sel = cb.nextElementSibling;
+  sel.disabled = !cb.checked;
+}
+
+// SUBMIT LOGIC
+function submitForm(){
+
+  let age = document.getElementById("age").value;
+  let pregnant = document.getElementById("pregnant").value;
+
+  let selected = 0;
+
+  document.querySelectorAll("#diseaseList div").forEach(d=>{
+    let cb = d.querySelector("input");
+    if(cb.checked) selected++;
+  });
+
+  let msg="";
+
+  if(age==="minor") msg="❌ Not Eligible (Minor)";
+  else if(pregnant==="yes") msg="❌ Not Eligible (Pregnant)";
+  else if(selected>3) msg="❌ Not Eligible (>3 diseases)";
+  else msg="✅ Eligible";
+
+  document.getElementById("result").innerText = msg;
+
+  // Save data to page 2
+  document.getElementById("dataBox").innerHTML =
+    "Name: "+document.getElementById("name").value+
+    "<br>Diseases Selected: "+selected;
+
+  goToPage(4);
+}
+
+</script>
+
+</body>
+</html>
